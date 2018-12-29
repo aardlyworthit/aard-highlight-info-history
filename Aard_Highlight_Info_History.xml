@@ -106,9 +106,9 @@ function go(name, line, args)
 	do_reset = false
 	if args.words ~= "" then
 		do_reset = true
-		ColourNote("darkred", "", "[", "red", "", "[", "silver", "", " Highlighting info history lines that contain '"..args[2].."'. ", "red", "", "]", "darkred", "", "]")
+		ColourNote("darkred", "", "[", "red", "", "[", "silver", "", " Highlighting info history lines that contain '"..args.words.."'. ", "red", "", "]", "darkred", "", "]")
 		Note()
-		SetTriggerOption("info_highlight", "match", "^\\[[\\d:\\s\\w]+\\] INFO: .*"..args[2]..".*$")
+		SetTriggerOption("info_highlight", "match", "^\\[[\\d:\\s\\w]+\\] INFO: .*"..args.words..".*$")
 	end
 	EnableTrigger("end_of_info", true)
 	DoAfterSpecial(1, "send_it('"..args[1].."')", 12)
