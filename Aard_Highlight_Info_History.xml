@@ -62,7 +62,7 @@ You can set the highlight colo	r with the following command:
 
 <aliases>
   <alias
-   match="^info \-h (\w+) (.+)$"
+   match="^info \-h (\w+)( (?<words>.+))?$"
    enabled="y"
    regexp="y"
    script="go"
@@ -87,6 +87,8 @@ You can set the highlight colo	r with the following command:
 require "gmcphelper"
 
 local color = GetVariable("color") or "yellow"
+local count = -1
+local do_reset = false
 
 function my_name()
 	local me = gmcp("char.base.name")
@@ -100,9 +102,14 @@ function set_color(name, line, args)
 end
 
 function go(name, line, args)
-	ColourNote("darkred", "", "[", "red", "", "[", "silver", "", " Highlighting info history lines that contain '"..args[2].."'. ", "red", "", "]", "darkred", "", "]")
-	Note()
-	SetTriggerOption("info_highlight", "match", "^\\[[\\d:\\s\\w]+\\] INFO: .*"..args[2]..".*$")
+	count = 0
+	do_reset = false
+	if args.words ~= "" then
+		do_reset = true
+		ColourNote("darkred", "", "[", "red", "", "[", "silver", "", " Highlighting info history lines that contain '"..args[2].."'. ", "red", "", "]", "darkred", "", "]")
+		Note()
+		SetTriggerOption("info_highlight", "match", "^\\[[\\d:\\s\\w]+\\] INFO: .*"..args[2]..".*$")
+	end
 	EnableTrigger("end_of_info", true)
 	DoAfterSpecial(1, "send_it('"..args[1].."')", 12)
 end
@@ -113,6 +120,7 @@ function send_it(w)
 end
 
 function highlight_line(name, line, args)
+	count = count + 1
 	ColourNote(color, "", args[0])
 end
 
@@ -122,8 +130,15 @@ function reset()
 		Note("Error getting player name from gmcp.")
 		return
 	end
-	ColourNote("darkred", "", "[", "red", "", "[", "silver", "", " Resetting info -h highlight to "..me..". ", "red", "", "]", "darkred", "", "]")
-	SetTriggerOption("info_highlight", "match", "^\\[[\\d:\\s\\w]+\\] INFO: .*"..me..".*$")
+	if count == 1 then
+		ColourNote("darkred", "", "[", "red", "", "[ ", "silver", "", count.." line highlighted. ", "red", "", "]", "darkred", "", "]")
+	elseif count >= 0 then	
+		ColourNote("darkred", "", "[", "red", "", "[ ", "silver", "", count.." lines highlighted. ", "red", "", "]", "darkred", "", "]")
+	end
+	if do_reset then
+		ColourNote("darkred", "", "[", "red", "", "[", "silver", "", " Resetting info -h highlight to "..me..". ", "red", "", "]", "darkred", "", "]")
+		SetTriggerOption("info_highlight", "match", "^\\[[\\d:\\s\\w]+\\] INFO: .*"..me..".*$")
+	end
 	EnableTrigger("end_of_info", false)
 end
 
